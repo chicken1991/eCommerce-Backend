@@ -3,25 +3,28 @@ const { Category, Product } = require('../../models');
 
 // The `/api/categories` endpoint
 
+// DONE
 router.get('/', async (req, res) => {
   // find all categories
   // be sure to include its associated Products
   try {
-    const catData = await Category.findAll();
+    const catData = await Category.findAll(
+      {include: Product}
+    );
     res.status(200).json(catData);
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
+// DONE
 router.get('/:id', async (req, res) => {
   // find one category by its `id` value
   // be sure to include its associated Products ======================= BP come back to this statement
   try {
-    const catId = await Category.findByPk(req.params.id, {
-      include: [{ model: Category, as: 'cat_id' }]
-
-    });
+    const catId = await Category.findByPk(req.params.id, 
+      {include: Product}
+    );
     if (!catId) {
       res.status(404).json({ message: 'No category found with this id!' });
       return;
@@ -43,15 +46,26 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', (req, res) => {
+//DONE - sorta
+router.put('/:id', async (req, res) => {
   // update a category by its `id` value
-  Category.update(req.body, {
+  try{
+  const catUp = await Category.update(req.body, {
     where: {
       id: req.params.id,
     },
   })
+  if(!catUp){
+    res.status(404).json({ message: 'No category found wiht this id!' });
+  }
+
+  res.status(200).json(catUp);
+} catch (err) {
+  res.status(500).json(err);
+}
 });
 
+//DONE
 router.delete('/:id', async (req, res) => {
   // delete a category by its `id` value
   try {
@@ -66,7 +80,7 @@ router.delete('/:id', async (req, res) => {
       return;
     }
 
-    res.status(200).json(catData);
+    res.status(200).json("Category has been deleted");
   } catch (err) {
     res.status(500).json(err);
   }

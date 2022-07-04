@@ -8,22 +8,25 @@ router.get('/', async (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data ============= BP revisit this statement
   try {
-    const productData = await Product.findAll();
+    const productData = await Product.findAll(
+      {include: Category}
+    );
     res.status(200).json(productData);
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
+// ++++++++++++++++++++++++++++ TODO++++++++++++++++++++++++++++++++++
+// I need to figure out how to make it display both Category stats and Tag status on the same query
 // get one product
 router.get('/:id', async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
   try {
-    const productId = await Product.findByPk(req.params.id, {
-      include: [{ model: Tag, through: ProductTag, as: 'req_product' }]
-
-    });
+    const productId = await Product.findByPk(req.params.id, 
+      {include: Tag, through: ProductTag, as: 'product_tag'}
+    );
     if (!productId) {
       res.status(404).json({ message: 'No product found with this id!' });
       return;
@@ -39,10 +42,10 @@ router.get('/:id', async (req, res) => {
 router.post('/', (req, res) => {
   /* req.body should look like this...
     {
-      product_name: "Basketball",
-      price: 200.00,
-      stock: 3,
-      tagIds: [1, 2, 3, 4]
+      "product_name": "Basketball",
+      "price": 200.00,
+      "stock": 3,
+      "tagIds": [1, 2, 3, 4]
     }
   */
   Product.create(req.body)
@@ -123,7 +126,7 @@ router.delete('/:id', async (req, res) => {
       return;
     }
 
-    res.status(200).json(travellerData);
+    res.status(200).json("Product has been deleted");
   } catch (err) {
     res.status(500).json(err);
   }
