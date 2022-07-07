@@ -6,10 +6,10 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 // get all products
 router.get('/', async (req, res) => {
   // find all products
-  // be sure to include its associated Category and Tag data ============= BP revisit this statement
+  // be sure to include its associated Category and Tag data
   try {
     const productData = await Product.findAll(
-      {include: Category}
+      { include: [{ model: Category }, { model: Tag }] }
     );
     res.status(200).json(productData);
   } catch (err) {
@@ -17,15 +17,16 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ++++++++++++++++++++++++++++ TODO++++++++++++++++++++++++++++++++++
-// I need to figure out how to make it display both Category stats and Tag status on the same query
+
 // get one product
 router.get('/:id', async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
   try {
-    const productId = await Product.findByPk(req.params.id, 
-      {include: Tag, through: ProductTag, as: 'product_tag'}
+    const productId = await Product.findByPk(req.params.id,
+
+      { include: [{ model: Category }, {model: Tag, through: ProductTag, as: 'tag_info' }] }
+
     );
     if (!productId) {
       res.status(404).json({ message: 'No product found with this id!' });
